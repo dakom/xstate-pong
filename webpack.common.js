@@ -70,7 +70,7 @@ const browserConfig = Object.assign({}, commonConfig, {
         filename: "[name].bundle.js",
         chunkFilename: "[name].bundle.js",
         sourceMapFilename: "[name].bundle.map",
-        publicPath: '/',
+        //publicPath: '/',
     },
 
     plugins: [
