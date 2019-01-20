@@ -58,7 +58,7 @@
   },
   "dependencies": {
     "fp-ts": "^1.12.3",
-    "pong-renderer": "0.0.4",
+    "pong-renderer": "0.0.5",
     "use-machine": "^1.0.0",
     "xstate": "^4.2.4"
   }
