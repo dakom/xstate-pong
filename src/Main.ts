@@ -1,10 +1,37 @@
-import {buildVersion, isProduction} from "utils/config/Config";
-import {setup, CollisionName} from "pong-renderer";
-
+import {buildVersion, isProduction} from "config/Config";
 console.log(`%c XState-Pong ${buildVersion} (productionMode: ${isProduction})`, 'color: #4286f4; font-size: large; font-family: "Comic Sans MS", cursive, sans-serif');
 
+import {CollisionName, setup as setupRenderer} from "pong-renderer";
+import {createEntities, createBall, createPaddle, createWall} from "entities/Entities";
+import {RenderableId, TransformId} from "components/Components";
 
-setup().then(({constants, render: _render, addPoint, playCollisionAudio}) => {
+setupRenderer().then((renderer) => {
+    const entities = createEntities();
+
+    const ball = createBall();
+    entities.add(ball);
+    entities.add(createPaddle("left"));
+    entities.add(createPaddle("right"));
+    entities.add(createWall("left"));
+    entities.add(createWall("right"));
+    entities.add(createWall("top"));
+    entities.add(createWall("bottom"));
+
+    console.log(ball.components.listIds());
+    /*
+    console.log("all entities");
+    console.log(entities.list());
+
+    console.log("entities with renderable:");
+    console.log(entities.listWithComponent(RenderableId));
+    
+    console.log("entities with renderable Or transform:");
+    console.log(entities.listWithAnyComponents([RenderableId, TransformId]));
+    
+    console.log("entities with renderable And transform:");
+    console.log(entities.listWithAllComponents([RenderableId, TransformId]));
+    */
+    /*
     const {canvasWidth, canvasHeight, paddleWidth} = constants;
 
     //Render the items in the middle of the screen (without helper)
@@ -20,9 +47,9 @@ setup().then(({constants, render: _render, addPoint, playCollisionAudio}) => {
     //We could decide to have a different audio player or use the default 
     const handleCollision = (collisionName:CollisionName) => {
         if(collisionName === CollisionName.LEFT_WALL) {
-            addPoint(2);
+            addScorePoint(2);
         } else if(collisionName === CollisionName.RIGHT_WALL) {
-            addPoint(1);
+            addScorePoint(1);
         } 
 
         playCollisionAudio(collisionName);
@@ -37,6 +64,7 @@ setup().then(({constants, render: _render, addPoint, playCollisionAudio}) => {
 
     //Render the first screen
     render();
+    */
 });
 
 

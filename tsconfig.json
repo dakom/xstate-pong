@@ -11,8 +11,9 @@
             ],
             "utils/*": ["src/utils/*"],
             "config/*": ["src/config/*"],
+	    "entities/*": ["src/entities/*"],
             "components/*": ["src/components/*"],
-            "theme/*": ["src/theme/*"]
+	    "systems/*": ["src/systems/*"]
         },
         "esModuleInterop": true,
         "skipLibCheck": true,

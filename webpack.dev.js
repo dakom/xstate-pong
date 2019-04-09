@@ -1,24 +1,13 @@
 require('dotenv').config();
 
-const merge = require('webpack-merge');
 const common = require('./webpack.common.js');
 const path = require('path');
 const webpack = require('webpack');
 
-//common settings on all configurations
-const extend = target => {
-    const extended = Object.assign({}, target, {
-        mode: "development",
-        devtool: "inline-source-map",
-    });
-    
-    
-    return extended;
-}
-
-//separate configurations
-const browserConfig = merge(extend(common.browserConfig), {
-    devServer: {
+module.exports = Object.assign({}, common.config, {
+	mode: "development",
+    devtool: "inline-source-map",
+	devServer: {
         //contentBase: path.join(__dirname, "dist/"),
         contentBase: path.resolve(__dirname, './site'),
         compress: true,
@@ -29,9 +18,4 @@ const browserConfig = merge(extend(common.browserConfig), {
         },
         watchContentBase: true,
     },
-    plugins: [
-        
-    ]
 });
-
-module.exports = browserConfig;
