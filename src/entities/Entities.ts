@@ -1,9 +1,10 @@
 import {createComponents, Component, Components} from "components/Components";
-import {Collection, CollectionItem, createCollection} from "utils/Utils";
+import {Collection, CollectionItem, createCollection, createCollectionItem} from "utils/Utils";
+import {Option, some, none} from "fp-ts/lib/Option";
 
-export * from "entities/ball/Ball";
-export * from "entities/paddle/Paddle";
-export * from "entities/wall/Wall";
+export * from "./ball/Ball";
+export * from "./paddle/Paddle";
+export * from "./wall/Wall";
 
 //Used in main
 export interface Entities extends Collection<Entity> {
@@ -11,6 +12,7 @@ export interface Entities extends Collection<Entity> {
     listWithAnyComponents: (ids:Array<Symbol>) => Array<Entity>;
     listWithAllComponents: (ids:Array<Symbol>) => Array<Entity>;
 }
+
 
 export const createEntities = ():Entities => {
     const _entities = createCollection<Entity>();
@@ -29,26 +31,26 @@ export const createEntities = ():Entities => {
             entity.components.hasAll(ids)
         );
 
+
     const entities = {
         ..._entities,
         listWithComponent,
         listWithAnyComponents,
-        listWithAllComponents
+        listWithAllComponents,
     };
 
     return entities;
 }
+
 //Used by the individual entities as a foundation to build on
 export interface Entity extends CollectionItem {
     components:Components;
 }
 
-export const createEntity = (name:string):Entity => {
+export const createEntity = ({id, dispose}:{id:string | Symbol, dispose: Option<() => void>}):Entity => {
     return {
-        //each entity is unique
-        id: Symbol(name),
-        components: createComponents(`${name} components`)
+        ...createCollectionItem({id, dispose}),
+        components: createComponents(`${name} components`),
     }
 }
-
 

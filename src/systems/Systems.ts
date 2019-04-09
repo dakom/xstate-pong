@@ -1,20 +1,20 @@
 import {createComponents, Component, Components} from "components/Components";
-import {Collection, CollectionItem, createCollection} from "utils/Utils";
+import {Entities} from "entities/Entities";
+import {Collection, CollectionItem, createCollection, createCollectionItem} from "utils/Utils";
+import {Option} from "fp-ts/lib/Option";
 
-export * from "entities/ball/Ball";
-export * from "entities/paddle/Paddle";
-export * from "entities/wall/Wall";
+export * from "./renderer/Renderer";
+export * from "./input/KeyboardInput";
+export * from "./transforms/UserTransforms";
 
-//Used by the systems as a foundation to build on
-export interface System extends CollectionItem {
+export interface SystemTick {
+    entities: Entities;
+    systems: Systems;
+    time: number;
+    deltaTime: number;
 }
 
-export const createSystem = (id:Symbol):System => {
-    return {
-        id,
-    }
-}
-
+type SystemTickFn = (tick:SystemTick) => void; 
 
 //Used in main
 export interface Systems extends Collection<System> {
@@ -23,3 +23,16 @@ export interface Systems extends Collection<System> {
 export const createSystems = ():Systems => {
     return createCollection<System>() as Systems;
 }
+
+//Used by the systems as a foundation to build on
+export interface System extends CollectionItem {
+    onTick: Option<SystemTickFn>,
+}
+
+export const createSystem = ({id, dispose, onTick}:{id:string | Symbol, dispose: Option<() => void>, onTick: Option<SystemTickFn>}):System => {
+    return {
+        ...createCollectionItem({id, dispose}),
+        onTick,
+    }
+}
+

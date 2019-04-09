@@ -84,7 +84,7 @@ const config = {
         alias: {
 	    "entities": path.resolve(__dirname, "src/entities/"), 
             "components": path.resolve(__dirname, "src/components/"), 
-	    "systems": path.resolve(__dirname, "src/entities/"), 
+	    "systems": path.resolve(__dirname, "src/systems/"), 
             "config": path.resolve(__dirname, "src/config/"), 
             "utils": path.resolve(__dirname, "src/utils/"), 
         }

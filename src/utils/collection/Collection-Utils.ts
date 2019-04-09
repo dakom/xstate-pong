@@ -1,4 +1,5 @@
 import {Option, some, none} from "fp-ts/lib/Option";
+import {getSymbolString} from "utils/Utils";
 
 //As long as the interface is satisfied, this
 //could be replaced with a different storage (e.g. Immutable.JS)
@@ -7,10 +8,10 @@ export interface Collection <T extends CollectionItem> {
     id: Symbol,
     add: (item:T) => Collection<T>;
     remove: (id:Symbol) => Collection<T>;
-    get: (id:Symbol) => T;
-    safeGet: (id:Symbol) => Option<T>;
-    getFirstWith: (pred: (item:T) => boolean) => T;
-    safeGetFirstWith: (pred: (item:T) => boolean) => Option<T>;
+    get: (id:Symbol) => Option<T>;
+    getAs: <V extends T>(id:Symbol) => V; //unsafe
+    getFirstWith: (pred: (item:T) => boolean) => Option<T>;
+    getFirstWithName: (name:string) => Option<T>;
     list: () => Array<T>;
     listIds: () => Array<Symbol>;
     listWith: (pred:(item:T) => boolean) => Array<T>; 
@@ -21,6 +22,8 @@ export interface Collection <T extends CollectionItem> {
 
 export interface CollectionItem {
     id: Symbol;
+    name: string;
+    dispose: Option<() => void>;
 }
 
 export const createCollection = <T extends CollectionItem>(name?:string):Collection<T> => {
@@ -34,7 +37,6 @@ export const createCollection = <T extends CollectionItem>(name?:string):Collect
         id: Symbol(name)
     }
 
-
     collection.add = (item:T) => {
         items.set(item.id, item);
         _listDirty = true;
@@ -43,31 +45,38 @@ export const createCollection = <T extends CollectionItem>(name?:string):Collect
 
 
     collection.remove = (id:Symbol) => {
-        items.delete(id);
-        _listDirty = true;
+        const item = items.get(id);
+        if(item) {
+            item.dispose.map(fn => fn());
+            items.delete(id);
+            _listDirty = true;
+        }
         return collection as Collection<T>;
     }
 
-    collection.get = (id:Symbol) => items.get(id);
 
-    collection.safeGet = (id:Symbol) => {
-        const item = collection.get(id);
+    collection.get = (id:Symbol) => {
+        const item = items.get(id);
         return item ? some(item) : none;
+    }
+
+    //unsafe
+    collection.getAs = <V extends T>(id:Symbol) => {
+        return items.get(id) as V;
     }
 
     collection.getFirstWith = (pred:(item:T) => boolean) => {
-        for (const [_, item] of Object.entries(items)) {
+
+        for (let item of items.values()) {
             if(pred(item)) {
-                return item;
+                return some(item);
             }
         }
-        return null;
+        return none;
     }
 
-    collection.safeGetFirstWith = (pred:(item:T) => boolean) => {
-        const item = collection.getFirstWith(pred);
-        return item ? some(item) : none;
-    }
+    collection.getFirstWithName = (name:string) => 
+        collection.getFirstWith(item => item.name === name);
 
     collection.list = () => {
         if(_listDirty) {
@@ -89,3 +98,9 @@ export const createCollection = <T extends CollectionItem>(name?:string):Collect
 
     return collection as Collection<T>;
 }
+
+export const createCollectionItem = ({id, dispose}:{id: string | Symbol, dispose: Option<() => void>}):CollectionItem => ({
+    id: typeof id === "string" ? Symbol(id) : id,
+    name: typeof id === "string" ? id : getSymbolString(id),
+    dispose
+})
