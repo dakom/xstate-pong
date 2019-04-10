@@ -3,7 +3,8 @@ import {Option, none, some} from "fp-ts/lib/Option";
 export const ControllerMotionId = Symbol("controllerMotion");
 
 export interface ControllerMotion extends Component {
-    getY: (direction: "up" | "down") => (deltaTime:number) => (posY:number) => Option<number>;
+    update: (direction: Option<"up" | "down">) => (time:number) => (posY:number) => void;
+    getY: (time:number) => Option<number>;
 }
 
 interface Options {
@@ -22,31 +23,47 @@ interface Options {
  */
 export const createControllerMotion = ({limitTop, limitBottom, speed}:Options):ControllerMotion => {
 
-    let _lastDirection: "up" | "down";
+    let _lastDirection: Option<"up" | "down"> = none;
 
-    let fn:(time:number) => number;
+    let fn:Option<(time:number) => number> = none;
 
     const createTrajectoryFunction = (posY:number) => (initialTime:number) => (multiplier:number) => {
         return (time:number) => posY + ((time - initialTime) * speed * multiplier)
     }
 
-    const getY = (direction: "up" | "down") => (time:number) => (posY:number):Option<number> => {
-        if(_lastDirection !== direction) {
-            fn = createTrajectoryFunction (posY) (time) (direction === "down" ? -1 : 1); 
+    const update = (direction: Option<"up" | "down">) => (time:number) => (posY:number) => {
+        if(_lastDirection.getOrElse(null) !== direction.getOrElse(null)) {
+
+            console.log("updating traj!");
+
+            direction.foldL(
+                () => {
+                    fn = some(() => posY);
+                }, 
+                dir => {
+                    fn = some(createTrajectoryFunction (posY) (time) (dir === "down" ? -1 : 1)); 
+                }
+            );
+
             _lastDirection = direction;
         }
+    }
 
-        const y = fn(time); 
+    const getY = (time:number):Option<number> => {
+        return fn.chain(f => {
+            const y = f(time); 
 
-        if(y < limitTop || y > limitBottom) {
-            return none;
-        }
+            if(y < limitTop || y > limitBottom) {
+                return none;
+            }
 
-        return some(y);
+            return some(y);
+        });
     }
 
     return {
         ...createComponent({id: ControllerMotionId, dispose: none}),
+        update,
         getY
     }
 }

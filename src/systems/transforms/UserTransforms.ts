@@ -20,12 +20,12 @@ export const createUserTransforms = ():System => {
                 const motion = entity.components.getAs<ControllerMotion>(ControllerMotionId);
                 const transform = entity.components.getAs<Transform>(TransformId);
 
-                controller.getDirection().map(direction => {
-                    motion.getY (direction) (time) (transform.pos.y).map(y => {
-                        transform.pos.y = y;
-                    });
+                motion.update(controller.getVerticalDirection()) (time) (transform.pos.y);
 
+                motion.getY(time).map(y => {
+                    transform.pos.y = y;
                 });
+
             });
     }
 
